@@ -1092,12 +1092,21 @@ function fetchOnesWorkItem() {
 
   var PROXY_BASE = 'http://localhost:8766';
 
-  // 优先通过本地代理服务器请求 Ones API
   checkProxy()
     .then(function(proxyOk) {
       if (proxyOk) {
-        return tryViaProxy();
+        // 通过本地代理的 agent-browser 提取数据
+        return fetch(PROXY_BASE + '/api/ones-extract?url=' + encodeURIComponent(link))
+          .then(function(r) { return r.json(); })
+          .then(function(json) {
+            if (json && json.status === 200 && json.data) {
+              fillFormFromOnesData(json.data);
+              return { success: true };
+            }
+            throw new Error(json && json.error || 'extract failed');
+          });
       } else {
+        // 无代理，尝试直接调用 Ones API
         return tryDirect();
       }
     })
@@ -1113,9 +1122,8 @@ function fetchOnesWorkItem() {
     .catch(function(err) {
       btn.disabled = false;
       btn.textContent = '拉取';
-      showFetchStatus('未能自动获取 Ones 数据。请启动本地代理或手动填写。', 'error');
-      // 兜底：提供打开 Ones 页面的链接
-      if (confirm('无法自动拉取 Ones 需求信息。\n\n是否在新标签页中打开 Ones 需求页面？\n您可以手动复制标题、描述等信息。')) {
+      showFetchStatus('未能自动获取，请手动填写或启动本地代理', 'error');
+      if (confirm('无法自动拉取 Ones 需求信息。\n\n请确认：\n1. 已启动本地代理（node server.js）\n2. 已配置 Ones Cookie\n\n是否在新标签页中打开 Ones 需求页面？')) {
         window.open(link, '_blank');
       }
     });
@@ -1127,32 +1135,6 @@ function fetchOnesWorkItem() {
       .catch(function() { return false; });
   }
 
-  function tryViaProxy() {
-    var endpoints = [
-      'https://ones.sankuai.com/ones/api/v1/project/' + parsed.productId + '/workitem/' + parsed.workItemId,
-      'https://ones.sankuai.com/api/v1/project/' + parsed.productId + '/workitem/' + parsed.workItemId,
-      'https://ones.sankuai.com/ones/api/v1/product/' + parsed.productId + '/workitem/' + parsed.workItemId
-    ];
-
-    function tryNext(index) {
-      if (index >= endpoints.length) {
-        return Promise.resolve({ success: false, error: 'all endpoints failed via proxy' });
-      }
-      return fetch(PROXY_BASE + '/api/proxy?url=' + encodeURIComponent(endpoints[index]))
-        .then(function(r) { return r.json(); })
-        .then(function(json) {
-          if (json && json.error) throw new Error(json.error);
-          if (json && (json.status === 200 || json.code === 200)) {
-            fillFormFromOnesData(json.data);
-            return { success: true };
-          }
-          throw new Error('unexpected response');
-        })
-        .catch(function() { return tryNext(index + 1); });
-    }
-    return tryNext(0);
-  }
-
   function tryDirect() {
     var endpoints = [
       'https://ones.sankuai.com/ones/api/v1/project/' + parsed.productId + '/workitem/' + parsed.workItemId,
@@ -1162,7 +1144,7 @@ function fetchOnesWorkItem() {
 
     function tryNext(index) {
       if (index >= endpoints.length) {
-        return Promise.resolve({ success: false, error: 'all endpoints failed directly' });
+        return Promise.resolve({ success: false, error: 'all endpoints failed' });
       }
       return fetch(endpoints[index], { credentials: 'include' })
         .then(function(r) { return r.json(); })

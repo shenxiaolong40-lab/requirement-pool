@@ -3,6 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const { execSync, exec } = require('child_process');
 
 const PORT = 8766;
 const COOKIE_FILE = path.join(__dirname, '.ones-cookie');
@@ -34,6 +35,7 @@ function proxyToOnes(targetUrl, req, res) {
     method: 'GET',
     headers: {
       'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
     },
     rejectUnauthorized: false,
@@ -73,6 +75,90 @@ function proxyToOnes(targetUrl, req, res) {
   proxyReq.end();
 }
 
+function agentBrowser(args) {
+  try {
+    return execSync('npx agent-browser ' + args, {
+      timeout: 15000,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe']
+    }).trim();
+  } catch (e) {
+    return null;
+  }
+}
+
+function extractOnesData(onesUrl, res) {
+  // Navigate to the Ones page
+  const gotoResult = agentBrowser('goto "' + onesUrl + '"');
+  if (!gotoResult || gotoResult.includes('登录')) {
+    res.writeHead(401, { ...CORS_HEADERS, 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'not_authenticated', message: '请先在浏览器中登录 Ones' }));
+    return;
+  }
+
+  // Get page title
+  const title = agentBrowser('get title') || '';
+
+  // Get snapshot
+  const snapshot = agentBrowser('snapshot') || '';
+
+  // Parse data from snapshot
+  const data = {};
+
+  // Title: remove prefix like 【需求】
+  data.title = title.replace(/^【[^】]*】/, '').trim();
+
+  // Priority
+  const priMatch = snapshot.match(/优先级[^]*?StaticText "([^"]*)"/);
+  if (priMatch) {
+    const priMap = { '紧急': 'P0', '高': 'P1', '中': 'P2', '低': 'P3' };
+    data.priority = priMap[priMatch[1]] || 'P1';
+  }
+
+  // Status
+  const statusMatch = snapshot.match(/状态[^]*?StaticText "([^"]*)"/);
+  if (statusMatch) {
+    const stMap = { '规划中': '待评审', '待评审': '待评审', '评审中': '待评审',
+      '待开发': '待开发', '开发中': '开发中', '实现中': '开发中',
+      '已完成': '已完成', '已发布': '已完成', '已取消': '已取消', '已拒绝': '已取消' };
+    data.status = stMap[statusMatch[1]] || '待评审';
+  }
+
+  // Iteration - match pattern like "保险260611迭代" (Chinese chars + alphanumeric + 迭代)
+  const iterMatch = snapshot.match(/([一-龥]*\w+迭代)/);
+  if (iterMatch) {
+    data.iteration = iterMatch[1];
+  }
+
+  // Creator - find nearest StaticText after 创建者
+  const creatorSection = snapshot.split('创建者')[1];
+  if (creatorSection) {
+    const cm = creatorSection.match(/StaticText "([^"]+)"/);
+    if (cm) data.creator = cm[1].trim();
+  }
+  // Fallback: use first assignee as creator
+  if (!data.creator) {
+    const assigneeSection = snapshot.split('指派给')[1];
+    if (assigneeSection) {
+      const am = assigneeSection.match(/StaticText "([^"]+)"/);
+      if (am) data.creator = am[1].trim();
+    }
+  }
+
+  // Description - simple extraction from snapshot body text
+  var descParts = [];
+  if (snapshot.includes('【需求背景】')) descParts.push('【需求背景】\n');
+  if (snapshot.includes('【需求内容】')) descParts.push('【需求内容】\n');
+  if (snapshot.includes('【预期价值】')) descParts.push('【预期价值】\n');
+  if (snapshot.includes('【相关wiki】')) descParts.push('【相关wiki】');
+  if (descParts.length > 0) {
+    data.description = descParts.join('\n');
+  }
+
+  res.writeHead(200, { ...CORS_HEADERS, 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ status: 200, data: data }));
+}
+
 const server = http.createServer((req, res) => {
   const reqUrl = url.parse(req.url, true);
 
@@ -100,6 +186,19 @@ const server = http.createServer((req, res) => {
     }
 
     proxyToOnes(targetUrl, req, res);
+    return;
+  }
+
+  // Ones page data extraction via agent-browser
+  if (reqUrl.pathname === '/api/ones-extract') {
+    const onesUrl = reqUrl.query.url;
+    if (!onesUrl || !onesUrl.includes('ones.sankuai.com')) {
+      res.writeHead(400, { ...CORS_HEADERS, 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'invalid_url' }));
+      return;
+    }
+
+    extractOnesData(onesUrl, res);
     return;
   }
 
