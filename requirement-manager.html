@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>孝龙的需求池</title>
+<style>
+/* ========== 1. CSS 变量 ========== */
+:root {
+  --color-primary: #3B82F6;
+  --color-primary-light: #EFF6FF;
+  --color-primary-dark: #2563EB;
+  --color-bg: #F0F4FF;
+  --color-surface: #FFFFFF;
+  --color-border: #E2E8F0;
+  --color-text: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-success: #22C55E;
+  --color-success-bg: #F0FDF4;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-danger-bg: #FEF2F2;
+  --color-p0: #EF4444;
+  --color-p0-bg: #FEF2F2;
+  --color-p1: #F59E0B;
+  --color-p1-bg: #FFFBEB;
+  --color-p2: #3B82F6;
+  --color-p2-bg: #EFF6FF;
+  --color-p3: #94A3B8;
+  --color-p3-bg: #F8FAFC;
+  --color-table-header: #F8FAFC;
+  --color-table-hover: #EFF6FF;
+  --color-table-stripe: #F8FAFC;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 28px;
+  --spacing-xl: 36px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 32px rgba(0,0,0,0.10);
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-xxl: 22px;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+}
+
+/* ========== 2. 基础重置 ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background: linear-gradient(135deg, #F0F4FF 0%, #E8EEFB 50%, #F0F4FF 100%);
+  background-attachment: fixed;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ========== 3. 布局 ========== */
+.app-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-lg) 28px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+.header-left h1 {
+  font-size: var(--font-size-xxl);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.3px;
+}
+.header-left p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+/* ========== 4. 按钮 ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  font-family: inherit;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+}
+.btn-primary:hover { background: var(--color-primary-dark); box-shadow: 0 4px 10px rgba(59,130,246,0.35); }
+.btn-default {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+.btn-default:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+  border-color: var(--color-danger);
+}
+.btn-danger:hover { background: #DC2626; }
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  padding: 4px 8px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+}
+.btn-text:hover { background: var(--color-primary-light); }
+.btn-text.danger { color: var(--color-danger); }
+.btn-text.danger:hover { background: var(--color-danger-bg); }
+.btn-sm { padding: 6px 12px; font-size: var(--font-size-sm); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ========== 5. 统计面板 ========== */
+.stats-section { margin-bottom: var(--spacing-md); }
+.stats-section h3 {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.stat-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--color-border);
+}
+.stat-card.p0::before { background: var(--color-p0); }
+.stat-card.p1::before { background: var(--color-p1); }
+.stat-card.p2::before { background: var(--color-p2); }
+.stat-card.p3::before { background: var(--color-p3); }
+.stat-card.status-pending::before { background: var(--color-warning); }
+.stat-card.status-dev::before { background: var(--color-primary); }
+.stat-card.status-progress::before { background: #3B82F6; }
+.stat-card.status-done::before { background: var(--color-success); }
+.stat-card.status-cancel::before { background: var(--color-text-muted); }
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-card .stat-count {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+.stat-card .stat-label {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+  font-weight: 500;
+}
+.stat-card.p0 .stat-count { color: var(--color-p0); }
+.stat-card.p1 .stat-count { color: var(--color-p1); }
+.stat-card.p2 .stat-count { color: var(--color-p2); }
+.stat-card.p3 .stat-count { color: var(--color-p3); }
+.stat-card.status-pending .stat-count { color: var(--color-warning); }
+.stat-card.status-dev .stat-count { color: var(--color-primary); }
+.stat-card.status-done .stat-count { color: var(--color-success); }
+.stat-card.status-cancel .stat-count { color: var(--color-text-muted); }
+
+/* ========== 6. 工具栏 ========== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+.search-box {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  padding: 9px 14px 9px 34px;
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #F8FAFC;
+  color: var(--color-text);
+  transition: all var(--transition-fast);
+  outline: none;
+}
+.search-box input:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.search-box .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+.filter-select {
+  padding: 9px 30px 9px 12px;
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #F8FAFC;
+  color: var(--color-text);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  min-width: 110px;
+  transition: all var(--transition-fast);
+}
+.filter-select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+/* ========== 7. 表格 ========== */
+.table-container {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-base);
+}
+thead th {
+  background: #F8FAFC;
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  border-bottom: 2px solid #DBEAFE;
+  white-space: nowrap;
+  user-select: none;
+}
+thead th.sortable { cursor: pointer; }
+thead th.sortable:hover { color: var(--color-primary); }
+thead th .sort-arrow { font-size: 10px; margin-left: 3px; color: var(--color-text-muted); }
+thead th.sorted { color: var(--color-primary); }
+thead th.sorted .sort-arrow { color: var(--color-primary); }
+tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: middle;
+}
+tbody tr:nth-child(even) { background: var(--color-table-stripe); }
+tbody tr:hover { background: var(--color-table-hover); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: background var(--transition-fast); }
+.col-create-time { width: 105px; font-size: var(--font-size-sm); color: var(--color-text-secondary); white-space: nowrap; }
+.col-title { width: 160px; max-width: 160px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.col-priority { width: 75px; }
+.col-status { width: 80px; }
+.col-key-milestone { width: 105px; font-size: var(--font-size-sm); color: var(--color-text-secondary); white-space: nowrap; }
+.col-source { width: 85px; font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.col-creator { width: 65px; }
+.col-doc-link { width: 90px; }
+.col-doc-link a { font-size: var(--font-size-sm); white-space: nowrap; }
+.col-iteration { width: 95px; font-size: var(--font-size-sm); color: var(--color-text-secondary); white-space: nowrap; }
+.col-actions { width: 110px; text-align: center; }
+.col-actions .btn-text { display: inline-block; }
+
+/* ========== 8. Badge ========== */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.2px;
+}
+.badge-p0 { background: var(--color-p0-bg); color: var(--color-p0); }
+.badge-p1 { background: var(--color-p1-bg); color: var(--color-p1); }
+.badge-p2 { background: var(--color-p2-bg); color: var(--color-p2); }
+.badge-p3 { background: var(--color-p3-bg); color: var(--color-p3); }
+.badge-status-pending { background: #FFFBEB; color: #D97706; }
+.badge-status-todo { background: var(--color-primary-light); color: var(--color-primary); }
+.badge-status-progress { background: #EFF6FF; color: #3B82F6; }
+.badge-status-done { background: var(--color-success-bg); color: #16A34A; }
+.badge-status-cancel { background: #F8FAFC; color: var(--color-text-muted); }
+
+/* ========== 9. 弹窗 ========== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.5);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal);
+}
+.modal-overlay.active { opacity: 1; visibility: visible; }
+.modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 92%;
+  max-width: 620px;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.25s ease;
+}
+.modal-overlay.active .modal { transform: translateY(0) scale(1); }
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: #F8FAFC;
+}
+.modal-header h3 { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text); }
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 6px 8px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+.modal-close:hover { background: rgba(0,0,0,0.06); color: var(--color-text); }
+.modal-body { padding: 24px; }
+.form-group { margin-bottom: 18px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-group label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+.form-group label .required { color: var(--color-danger); margin-left: 2px; }
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 9px 14px;
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  background: #F8FAFC;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 34px;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border);
+}
+.form-error { color: var(--color-danger); font-size: var(--font-size-sm); margin-top: 4px; display: none; }
+
+/* ========== 10. 确认对话框 ========== */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.5);
+  backdrop-filter: blur(2px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal);
+}
+.confirm-overlay.active { opacity: 1; visibility: visible; }
+.confirm-box {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 28px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.25s ease;
+}
+.confirm-overlay.active .confirm-box { transform: translateY(0) scale(1); }
+.confirm-box .confirm-icon {
+  font-size: 44px;
+  margin-bottom: 12px;
+}
+.confirm-box h4 { font-size: var(--font-size-lg); font-weight: 600; margin-bottom: 8px; }
+.confirm-box p { font-size: var(--font-size-base); color: var(--color-text-secondary); margin-bottom: 20px; }
+.confirm-actions { display: flex; justify-content: center; gap: 10px; }
+
+/* ========== 11. Toast ========== */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.2s forwards;
+}
+.toast-success { background: var(--color-success-bg); color: #16A34A; border: 1px solid #BBF7D0; }
+.toast-error { background: var(--color-danger-bg); color: #DC2626; border: 1px solid #FECACA; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-12px); } }
+
+/* ========== 12. 空状态 ========== */
+.empty-state {
+  text-align: center;
+  padding: 56px 24px;
+  color: var(--color-text-muted);
+}
+.empty-state .empty-icon { font-size: 52px; margin-bottom: 12px; opacity: 0.6; }
+.empty-state p { font-size: var(--font-size-base); }
+
+/* ========== 13. Footer ========== */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--spacing-md);
+  padding: 0 4px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ========== 14. 动画 ========== */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ========== 15. 响应式 ========== */
+@media (max-width: 1024px) {
+  .col-source, .col-creator { display: none; }
+  .form-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; gap: var(--spacing-sm); }
+  .toolbar { flex-direction: column; }
+  .search-box { min-width: 100%; }
+  .filter-select { width: 100%; }
+  .col-doc-link, .col-iteration { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== 主容器 ========== -->
+<div class="app-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>孝龙的需求池</h1>
+      <p>个人产品需求跟踪与管理</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="btn btn-default btn-sm" id="btnAdmin" onclick="toggleAdmin()" title="管理员登录">
+        🔒 仅查看
+      </button>
+      <button class="btn btn-primary" id="btnAdd" onclick="openModal()">
+        + 新增需求
+      </button>
+    </div>
+  </div>
+
+  <!-- 优先级统计 -->
+  <div class="stats-section">
+    <h3>优先级分布</h3>
+    <div class="stats-grid pri" id="priorityStats"></div>
+  </div>
+
+  <!-- 状态统计 -->
+  <div class="stats-section">
+    <h3>状态分布</h3>
+    <div class="stats-grid sta" id="statusStats"></div>
+  </div>
+
+  <!-- 工具栏 -->
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="搜索需求标题或描述..." oninput="onSearch()">
+    </div>
+    <select class="filter-select" id="filterPriority" onchange="onFilter()">
+      <option value="">全部优先级</option>
+      <option value="P0">P0 紧急</option>
+      <option value="P1">P1 高</option>
+      <option value="P2">P2 中</option>
+      <option value="P3">P3 低</option>
+    </select>
+    <select class="filter-select" id="filterStatus" onchange="onFilter()">
+      <option value="">全部状态</option>
+      <option value="待评审">待评审</option>
+      <option value="待开发">待开发</option>
+      <option value="开发中">开发中</option>
+      <option value="已完成">已完成</option>
+      <option value="已取消">已取消</option>
+    </select>
+    <select class="filter-select" id="filterIteration" onchange="onFilter()">
+      <option value="">全部迭代</option>
+    </select>
+    <button class="btn btn-default btn-sm" onclick="exportCSV()">导出 CSV</button>
+  </div>
+
+  <!-- 表格 -->
+  <div class="table-container">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-create-time sortable" onclick="handleSort('createDate')" data-col="createDate">创建时间 <span class="sort-arrow"></span></th>
+            <th class="col-title sortable" onclick="handleSort('title')" data-col="title">标题 <span class="sort-arrow"></span></th>
+            <th class="col-doc-link">需求文档</th>
+            <th class="col-iteration">迭代周期</th>
+            <th class="col-priority sortable" onclick="handleSort('priority')" data-col="priority">优先级 <span class="sort-arrow"></span></th>
+            <th class="col-status sortable" onclick="handleSort('status')" data-col="status">状态 <span class="sort-arrow"></span></th>
+            <th class="col-key-milestone">关键节点</th>
+            <th class="col-source">来源</th>
+            <th class="col-creator">创建人</th>
+            <th class="col-actions">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="empty-icon">📋</div>
+      <p>暂无需求记录</p>
+      <p style="font-size:12px;margin-top:4px;">点击「新增需求」创建第一条需求</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span id="footerCount"></span>
+    <span id="footerTime"></span>
+  </div>
+</div>
+
+<!-- Toast 容器 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- 新增/编辑弹窗 -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">新增需求</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="formId">
+      <div class="form-group">
+        <label>需求标题 <span class="required">*</span></label>
+        <input type="text" id="formTitle" placeholder="请输入需求标题" maxlength="100">
+        <div class="form-error" id="titleError">请输入需求标题</div>
+      </div>
+      <div class="form-group">
+        <label>需求描述</label>
+        <textarea id="formDesc" placeholder="请输入需求描述（可选）" maxlength="500"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>优先级</label>
+          <select id="formPriority">
+            <option value="P1">P1 高</option>
+            <option value="P0">P0 紧急</option>
+            <option value="P2">P2 中</option>
+            <option value="P3">P3 低</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>状态</label>
+          <select id="formStatus">
+            <option value="待评审">待评审</option>
+            <option value="待开发">待开发</option>
+            <option value="开发中">开发中</option>
+            <option value="已完成">已完成</option>
+            <option value="已取消">已取消</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>关键节点</label>
+          <input type="text" id="formKeyMilestone" placeholder="例如：2026/06/01上线" maxlength="50">
+        </div>
+        <div class="form-group">
+          <label>来源</label>
+          <select id="formSource">
+            <option value="用户反馈">用户反馈</option>
+            <option value="数据分析">数据分析</option>
+            <option value="竞品分析">竞品分析</option>
+            <option value="内部需求">内部需求</option>
+            <option value="领导要求">领导要求</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>创建人</label>
+        <input type="text" id="formCreator" placeholder="请输入创建人（可选）" maxlength="20">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>需求文档</label>
+          <input type="url" id="formDocLink" placeholder="输入文档链接（可选）" maxlength="500">
+        </div>
+        <div class="form-group">
+          <label>迭代周期</label>
+          <input type="text" id="formIteration" placeholder="例如：0611迭代" maxlength="20">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-default" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" id="btnSave" onclick="handleSave()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 删除确认对话框 -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">⚠️</div>
+    <h4>确认删除</h4>
+    <p id="confirmMsg">确定要删除这条需求吗？此操作不可恢复。</p>
+    <div class="confirm-actions">
+      <button class="btn btn-default" onclick="closeConfirm()">取消</button>
+      <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 管理员登录弹窗 -->
+<div class="confirm-overlay" id="adminOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🔐</div>
+    <h4>管理员登录</h4>
+    <p>请输入管理密码以获取编辑权限</p>
+    <div style="margin-bottom:16px;">
+      <input type="password" id="adminPassword" placeholder="请输入密码" style="width:100%;padding:9px 14px;font-size:14px;font-family:inherit;border:1px solid #E2E8F0;border-radius:6px;outline:none;text-align:center;" maxlength="20" onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
+    <div class="confirm-actions">
+      <button class="btn btn-default" onclick="closeAdmin()">取消</button>
+      <button class="btn btn-primary" onclick="adminLogin()">登录</button>
+    </div>
+  </div>
+</div>
+
+<!-- 无权限提示弹窗 -->
+<div class="confirm-overlay" id="noPermOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🚫</div>
+    <h4>暂无操作权限</h4>
+    <p>当前为只读模式，仅管理员可进行新增、编辑和删除操作。</p>
+    <div class="confirm-actions">
+      <button class="btn btn-primary" onclick="closeNoPerm();openAdmin()">管理员登录</button>
+      <button class="btn btn-default" onclick="closeNoPerm()">知道了</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== 1. 常量 & 枚举映射 ========== */
+const PRIORITY_MAP = { 'P0': 'P0 紧急', 'P1': 'P1 高', 'P2': 'P2 中', 'P3': 'P3 低' };
+const PRIORITY_ORDER = { 'P0': 4, 'P1': 3, 'P2': 2, 'P3': 1 };
+const STATUS_ORDER = { '待评审': 1, '待开发': 2, '开发中': 3, '已完成': 4, '已取消': 5 };
+const STORAGE_KEY = 'requirement_pool_data';
+const STORAGE_META_KEY = 'requirement_pool_meta';
+
+function getMeta() {
+  try {
+    const raw = localStorage.getItem(STORAGE_META_KEY);
+    return raw ? JSON.parse(raw) : { counter: 0 };
+  } catch { return { counter: 0 }; }
+}
+function saveMeta(meta) {
+  localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta));
+}
+
+/* ========== 2. 示例数据 ========== */
+function generateDemoData() {
+  var now = new Date();
+  function dateStr(offset) {
+    var d = new Date(now);
+    d.setDate(d.getDate() - offset);
+    return d.toISOString().slice(0,10);
+  }
+  var meta = getMeta();
+  var data = [
+    { id: 'REQ-20260515-001', title: '用户登录页体验优化', description: '优化登录页面的加载速度，简化登录流程，支持手机号验证码登录', priority: 'P0', status: '开发中', source: '用户反馈', creator: '张三', docLink: 'https://doc.example.com/login-optimization', iteration: '0611', keyMilestone: '2026/06/11上线', createDate: dateStr(6), updateDate: dateStr(2) },
+    { id: 'REQ-20260515-002', title: '数据看板实时刷新功能', description: '在运营数据看板中增加实时数据刷新能力，支持自定义刷新频率', priority: 'P0', status: '待评审', source: '领导要求', creator: '李四', docLink: '', iteration: '0611', keyMilestone: '2026/06/30评审', createDate: dateStr(5), updateDate: dateStr(5) },
+    { id: 'REQ-20260516-003', title: '订单列表导出性能优化', description: '当前导出超过1万条订单数据时页面卡顿，需要优化导出逻辑支持异步处理', priority: 'P1', status: '待开发', source: '内部需求', creator: '王五', docLink: 'https://doc.example.com/export-optimization', iteration: '0528', keyMilestone: '', createDate: dateStr(4), updateDate: dateStr(3) },
+    { id: 'REQ-20260517-004', title: '竞品分析-会员体系对比', description: '对比主要竞品的会员权益体系，输出差异化方案并推动落地', priority: 'P1', status: '已完成', source: '竞品分析', creator: '张三', docLink: 'https://doc.example.com/vip-analysis', iteration: '0528', keyMilestone: '2026/05/28上线', createDate: dateStr(3), updateDate: dateStr(1) },
+    { id: 'REQ-20260518-005', title: '修复iOS端首页白屏问题', description: '部分iOS 17用户打开首页时出现白屏，需要排查原因并修复', priority: 'P2', status: '待评审', source: '用户反馈', creator: '赵六', docLink: '', iteration: '', keyMilestone: '2026/06/15修复', createDate: dateStr(2), updateDate: dateStr(2) },
+    { id: 'REQ-20260518-006', title: '搜索结果页增加筛选条件', description: '在搜索结果页增加价格区间、品牌、评分等筛选维度，提升用户筛选效率', priority: 'P2', status: '开发中', source: '数据分析', creator: '李四', docLink: 'https://doc.example.com/search-filter', iteration: '0611', keyMilestone: '2026/06/11上线', createDate: dateStr(2), updateDate: dateStr(1) },
+    { id: 'REQ-20260519-007', title: '后台管理系统操作日志', description: '记录管理员所有关键操作日志，支持查询和导出，用于安全审计', priority: 'P3', status: '已完成', source: '内部需求', creator: '王五', docLink: '', iteration: '0528', keyMilestone: '', createDate: dateStr(1), updateDate: dateStr(0) },
+    { id: 'REQ-20260520-008', title: '页面加载loading动画优化', description: '统一各页面loading动画风格，使用品牌元素替换默认菊花图', priority: 'P3', status: '已取消', source: '内部需求', creator: '赵六', docLink: '', iteration: '', keyMilestone: '', createDate: dateStr(0), updateDate: dateStr(0) }
+  ];
+  meta.counter = data.length;
+  saveMeta(meta);
+  return data;
+}
+
+/* ========== 3. DataStore ========== */
+function loadAll() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      var demo = generateDemoData();
+      saveAll(demo);
+      return demo;
+    }
+    return JSON.parse(raw);
+  } catch(e) {
+    return generateDemoData();
+  }
+}
+
+function saveAll(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {
+    showToast('存储空间不足，请清理部分数据', 'error');
+  }
+}
+
+function getById(id) {
+  var all = loadAll();
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].id === id) return all[i];
+  }
+  return null;
+}
+
+function addItem(item) {
+  var all = loadAll();
+  all.unshift(item);
+  saveAll(all);
+}
+
+function updateItem(item) {
+  var all = loadAll();
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].id === item.id) {
+      all[i] = item;
+      break;
+    }
+  }
+  saveAll(all);
+}
+
+function deleteItem(id) {
+  var all = loadAll();
+  var filtered = all.filter(function(r) { return r.id !== id; });
+  saveAll(filtered);
+}
+
+/* ========== 4. 工具函数 ========== */
+function generateId() {
+  var meta = getMeta();
+  meta.counter++;
+  saveMeta(meta);
+  var dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  return 'REQ-' + dateStr + '-' + String(meta.counter).padStart(3,'0');
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function showToast(msg, type) {
+  type = type || 'success';
+  var container = document.getElementById('toastContainer');
+  var el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(function() { el.remove(); }, 2600);
+}
+
+var debounceTimer = null;
+function debounce(fn, delay) {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(fn, delay);
+}
+
+/* ========== 5. 过滤引擎 ========== */
+function getFilteredData() {
+  var all = loadAll();
+  var searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+  var filterPriority = document.getElementById('filterPriority').value;
+  var filterStatus = document.getElementById('filterStatus').value;
+  var filterIteration = document.getElementById('filterIteration').value;
+
+  return all.filter(function(item) {
+    if (searchTerm) {
+      var inTitle = item.title.toLowerCase().indexOf(searchTerm) !== -1;
+      var inDesc = item.description.toLowerCase().indexOf(searchTerm) !== -1;
+      if (!inTitle && !inDesc) return false;
+    }
+    if (filterPriority && item.priority !== filterPriority) return false;
+    if (filterStatus && item.status !== filterStatus) return false;
+    if (filterIteration && item.iteration !== filterIteration) return false;
+    return true;
+  });
+}
+
+/* ========== 6. 排序引擎 ========== */
+var sortConfig = { column: null, direction: 'asc' };
+
+function handleSort(column) {
+  if (sortConfig.column === column) {
+    if (sortConfig.direction === 'asc') sortConfig.direction = 'desc';
+    else { sortConfig.column = null; sortConfig.direction = 'asc'; }
+  } else {
+    sortConfig.column = column;
+    sortConfig.direction = 'asc';
+  }
+  refreshUI();
+}
+
+function sortData(data) {
+  if (!sortConfig.column) return data;
+  var col = sortConfig.column;
+  var dir = sortConfig.direction === 'asc' ? 1 : -1;
+  return data.slice().sort(function(a, b) {
+    var va, vb;
+    if (col === 'priority') { va = PRIORITY_ORDER[a.priority] || 0; vb = PRIORITY_ORDER[b.priority] || 0; }
+    else if (col === 'status') { va = STATUS_ORDER[a.status] || 0; vb = STATUS_ORDER[b.status] || 0; }
+    else if (col === 'id') { va = a.id; vb = b.id; }
+    else { va = a[col] || ''; vb = b[col] || ''; }
+
+    if (typeof va === 'string') {
+      return va.localeCompare(vb, 'zh-CN') * dir;
+    }
+    return (va - vb) * dir;
+  });
+}
+
+/* ========== 7. UI 渲染 ========== */
+function refreshUI() {
+  var filtered = getFilteredData();
+  var sorted = sortData(filtered);
+  updateIterationFilter(loadAll());
+  renderStats(loadAll(), filtered);
+  renderTable(sorted);
+  renderFooter(filtered);
+  updateSortHeaders();
+}
+
+function updateIterationFilter(all) {
+  var select = document.getElementById('filterIteration');
+  var currentVal = select.value;
+  var iterations = [];
+  all.forEach(function(r) { if (r.iteration && iterations.indexOf(r.iteration) === -1) iterations.push(r.iteration); });
+  iterations.sort();
+  var html = '<option value="">全部迭代</option>';
+  iterations.forEach(function(v) {
+    html += '<option value="' + v + '"' + (currentVal === v ? ' selected' : '') + '>' + v + '迭代</option>';
+  });
+  select.innerHTML = html;
+}
+
+function renderStats(all, filtered) {
+  // 优先级统计
+  var priCounts = { P0: 0, P1: 0, P2: 0, P3: 0 };
+  all.forEach(function(r) { priCounts[r.priority] = (priCounts[r.priority] || 0) + 1; });
+  var priHTML = '';
+  ['P0', 'P1', 'P2', 'P3'].forEach(function(p) {
+    priHTML += '<div class="stat-card ' + p.toLowerCase() + '"><div class="stat-count">' + (priCounts[p] || 0) + '</div><div class="stat-label">' + PRIORITY_MAP[p] + '</div></div>';
+  });
+  document.getElementById('priorityStats').innerHTML = priHTML;
+
+  // 状态统计
+  var statusKeys = ['待评审', '待开发', '开发中', '已完成', '已取消'];
+  var statusClassMap = { '待评审': 'status-pending', '待开发': 'status-dev', '开发中': 'status-progress', '已完成': 'status-done', '已取消': 'status-cancel' };
+  var stCounts = {};
+  all.forEach(function(r) { stCounts[r.status] = (stCounts[r.status] || 0) + 1; });
+  var stHTML = '';
+  statusKeys.forEach(function(s) {
+    var cls = statusClassMap[s] || '';
+    stHTML += '<div class="stat-card ' + cls + '"><div class="stat-count">' + (stCounts[s] || 0) + '</div><div class="stat-label">' + s + '</div></div>';
+  });
+  document.getElementById('statusStats').innerHTML = stHTML;
+}
+
+function getPriorityBadge(p) {
+  return '<span class="badge badge-' + p.toLowerCase() + '">' + PRIORITY_MAP[p] + '</span>';
+}
+
+function getStatusBadge(s) {
+  var map = { '待评审': 'badge-status-pending', '待开发': 'badge-status-todo', '开发中': 'badge-status-progress', '已完成': 'badge-status-done', '已取消': 'badge-status-cancel' };
+  return '<span class="badge ' + (map[s] || '') + '">' + s + '</span>';
+}
+
+function renderTable(data) {
+  var tbody = document.getElementById('tableBody');
+  var empty = document.getElementById('emptyState');
+
+  if (data.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  var html = '';
+  data.forEach(function(r) {
+    html += '<tr>';
+    html += '<td class="col-create-time">' + r.createDate + '</td>';
+    html += '<td class="col-title" title="' + escapeHTML(r.title) + '">' + escapeHTML(r.title) + '</td>';
+    html += '<td class="col-doc-link">' + (r.docLink ? '<a href="' + escapeHTML(r.docLink) + '" target="_blank" title="' + escapeHTML(r.docLink) + '">查看文档</a>' : '<span style="color:#C0C4CC">-</span>') + '</td>';
+    html += '<td class="col-iteration">' + (r.iteration ? escapeHTML(r.iteration) + '迭代' : '<span style="color:#C0C4CC">-</span>') + '</td>';
+    html += '<td class="col-priority">' + getPriorityBadge(r.priority) + '</td>';
+    html += '<td class="col-status">' + getStatusBadge(r.status) + '</td>';
+    html += '<td class="col-key-milestone">' + (r.keyMilestone ? escapeHTML(r.keyMilestone) : '<span style="color:#C0C4CC">-</span>') + '</td>';
+    html += '<td class="col-source">' + escapeHTML(r.source) + '</td>';
+    html += '<td class="col-creator">' + escapeHTML(r.creator) + '</td>';
+    html += '<td class="col-actions">';
+    html += '<button class="btn btn-text" onclick="editItem(\'' + r.id + '\')">编辑</button>';
+    html += '<button class="btn btn-text danger" onclick="deleteConfirm(\'' + r.id + '\')">删除</button>';
+    html += '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function renderFooter(filtered) {
+  var all = loadAll();
+  document.getElementById('footerCount').textContent = '共 ' + all.length + ' 条需求，当前筛选显示 ' + filtered.length + ' 条';
+  document.getElementById('footerTime').textContent = '更新: ' + new Date().toLocaleString('zh-CN');
+}
+
+function updateSortHeaders() {
+  document.querySelectorAll('thead th.sortable').forEach(function(th) {
+    var col = th.getAttribute('data-col');
+    th.classList.remove('sorted');
+    th.querySelector('.sort-arrow').textContent = '';
+    if (sortConfig.column === col) {
+      th.classList.add('sorted');
+      th.querySelector('.sort-arrow').textContent = sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+    }
+  });
+}
+
+function escapeHTML(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ========== 8. 弹窗控制 ========== */
+var editingId = null;
+
+function openModal(id) {
+  editingId = id || null;
+  document.getElementById('modalOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  if (id) {
+    document.getElementById('modalTitle').textContent = '编辑需求';
+    var item = getById(id);
+    if (item) {
+      document.getElementById('formId').value = item.id;
+      document.getElementById('formTitle').value = item.title;
+      document.getElementById('formDesc').value = item.description || '';
+      document.getElementById('formPriority').value = item.priority;
+      document.getElementById('formStatus').value = item.status;
+      document.getElementById('formKeyMilestone').value = item.keyMilestone || '';
+      document.getElementById('formSource').value = item.source;
+      document.getElementById('formCreator').value = item.creator || '';
+      document.getElementById('formDocLink').value = item.docLink || '';
+      document.getElementById('formIteration').value = item.iteration || '';
+    }
+  } else {
+    document.getElementById('modalTitle').textContent = '新增需求';
+    document.getElementById('formId').value = '';
+    document.getElementById('formTitle').value = '';
+    document.getElementById('formDesc').value = '';
+    document.getElementById('formPriority').value = 'P1';
+    document.getElementById('formStatus').value = '待评审';
+    document.getElementById('formKeyMilestone').value = '';
+    document.getElementById('formSource').value = '用户反馈';
+    document.getElementById('formCreator').value = '';
+    document.getElementById('formDocLink').value = '';
+    document.getElementById('formIteration').value = '';
+  }
+
+  document.getElementById('titleError').style.display = 'none';
+  setTimeout(function() { document.getElementById('formTitle').focus(); }, 100);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+  editingId = null;
+}
+
+function editItem(id) {
+  openModal(id);
+}
+
+function handleSave() {
+  var title = document.getElementById('formTitle').value.trim();
+  if (!title) {
+    document.getElementById('titleError').style.display = 'block';
+    document.getElementById('formTitle').focus();
+    return;
+  }
+  document.getElementById('titleError').style.display = 'none';
+
+  var now = todayStr();
+  var item = {
+    id: editingId || generateId(),
+    title: title,
+    description: document.getElementById('formDesc').value.trim(),
+    priority: document.getElementById('formPriority').value,
+    status: document.getElementById('formStatus').value,
+    keyMilestone: document.getElementById('formKeyMilestone').value.trim(),
+    source: document.getElementById('formSource').value,
+    creator: document.getElementById('formCreator').value.trim(),
+    docLink: document.getElementById('formDocLink').value.trim(),
+    iteration: document.getElementById('formIteration').value.trim(),
+    createDate: editingId ? (getById(editingId) ? getById(editingId).createDate : now) : now,
+    updateDate: now
+  };
+
+  if (editingId) {
+    updateItem(item);
+    showToast('需求更新成功');
+  } else {
+    addItem(item);
+    showToast('需求创建成功');
+  }
+
+  closeModal();
+  refreshUI();
+}
+
+/* ========== 9. 删除确认 ========== */
+var pendingDeleteId = null;
+
+function deleteConfirm(id) {
+  pendingDeleteId = id;
+  var item = getById(id);
+  if (item) {
+    document.getElementById('confirmMsg').textContent = '确定要删除「' + item.title + '」吗？此操作不可恢复。';
+  }
+  document.getElementById('confirmOverlay').classList.add('active');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('active');
+  pendingDeleteId = null;
+}
+
+function confirmDelete() {
+  if (pendingDeleteId) {
+    deleteItem(pendingDeleteId);
+    showToast('需求已删除');
+  }
+  closeConfirm();
+  refreshUI();
+}
+
+/* ========== 10. 搜索 & 筛选 ========== */
+function onSearch() {
+  debounce(refreshUI, 300);
+}
+
+function onFilter() {
+  refreshUI();
+}
+
+/* ========== 11. CSV 导出 ========== */
+function exportCSV() {
+  var data = getFilteredData();
+  if (data.length === 0) {
+    showToast('没有可导出的数据', 'error');
+    return;
+  }
+  var headers = ['创建时间', '标题', '描述', '优先级', '状态', '关键节点', '来源', '创建人', '需求文档', '迭代周期', '更新日期'];
+  var rows = data.map(function(r) {
+    return [r.createDate, r.title, r.description, PRIORITY_MAP[r.priority], r.status, r.keyMilestone || '', r.source, r.creator, r.docLink || '', r.iteration ? r.iteration + '迭代' : '', r.updateDate]
+      .map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; })
+      .join(',');
+  });
+  var csv = '﻿' + headers.join(',') + '\n' + rows.join('\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  var dateStr = new Date().toISOString().slice(0,16).replace(/[:-]/g,'').replace('T','-');
+  a.download = 'requirements-导出-' + dateStr + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV 导出成功');
+}
+
+/* ========== 12. 键盘 & 遮罩关闭 ========== */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('confirmOverlay').classList.contains('active')) {
+      closeConfirm();
+    } else if (document.getElementById('modalOverlay').classList.contains('active')) {
+      closeModal();
+    }
+  }
+  if (e.key === 'Enter' && document.getElementById('modalOverlay').classList.contains('active')) {
+    e.preventDefault();
+    handleSave();
+  }
+});
+
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+
+document.getElementById('adminOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAdmin();
+});
+
+document.getElementById('noPermOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeNoPerm();
+});
+
+/* ========== 13. 管理员权限控制 ========== */
+var isAdmin = false;
+var ADMIN_PASSWORD = 'xiaolong';
+
+function toggleAdmin() {
+  if (isAdmin) {
+    isAdmin = false;
+    updateAdminUI();
+    showToast('已退出管理模式，当前为只读', 'error');
+  } else {
+    openAdmin();
+  }
+}
+
+function openAdmin() {
+  document.getElementById('adminOverlay').classList.add('active');
+  document.getElementById('adminPassword').value = '';
+  setTimeout(function() { document.getElementById('adminPassword').focus(); }, 100);
+}
+
+function closeAdmin() {
+  document.getElementById('adminOverlay').classList.remove('active');
+}
+
+function adminLogin() {
+  var pwd = document.getElementById('adminPassword').value.trim();
+  if (pwd === ADMIN_PASSWORD) {
+    isAdmin = true;
+    updateAdminUI();
+    closeAdmin();
+    showToast('管理员登录成功，已获得编辑权限');
+  } else {
+    showToast('密码错误', 'error');
+  }
+}
+
+function updateAdminUI() {
+  var btn = document.getElementById('btnAdmin');
+  if (isAdmin) {
+    btn.innerHTML = '🔓 管理员';
+    btn.className = 'btn btn-primary btn-sm';
+    document.getElementById('btnAdd').style.opacity = '1';
+    document.getElementById('btnAdd').style.pointerEvents = 'auto';
+  } else {
+    btn.innerHTML = '🔒 仅查看';
+    btn.className = 'btn btn-default btn-sm';
+  }
+}
+
+function showNoPermission() {
+  document.getElementById('noPermOverlay').classList.add('active');
+}
+
+function closeNoPerm() {
+  document.getElementById('noPermOverlay').classList.remove('active');
+}
+
+function requireAdmin(fn) {
+  if (isAdmin) { fn(); } else { showNoPermission(); }
+}
+
+/* ========== 14. 覆盖操作函数加入权限检查 ========== */
+var _openModal = openModal;
+openModal = function(id) { requireAdmin(function() { _openModal(id); }); };
+
+var _editItem = editItem;
+editItem = function(id) { requireAdmin(function() { _editItem(id); }); };
+
+var _deleteConfirm = deleteConfirm;
+deleteConfirm = function(id) { requireAdmin(function() { _deleteConfirm(id); }); };
+
+/* ========== 15. 初始化 ========== */
+(function init() {
+  loadAll();
+  updateAdminUI();
+  refreshUI();
+})();
+</script>
+
+</body>
+</html>
