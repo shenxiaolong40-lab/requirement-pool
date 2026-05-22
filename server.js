@@ -145,14 +145,49 @@ function extractOnesData(onesUrl, res) {
     }
   }
 
-  // Description - simple extraction from snapshot body text
-  var descParts = [];
-  if (snapshot.includes('【需求背景】')) descParts.push('【需求背景】\n');
-  if (snapshot.includes('【需求内容】')) descParts.push('【需求内容】\n');
-  if (snapshot.includes('【预期价值】')) descParts.push('【预期价值】\n');
-  if (snapshot.includes('【相关wiki】')) descParts.push('【相关wiki】');
-  if (descParts.length > 0) {
-    data.description = descParts.join('\n');
+  // PRD 文档链接：从需求资产中提取
+  try {
+    // 查找包含 PRD 的 radio 行
+    var prdRadioLine = '';
+    var snapshotLines = snapshot.split('\n');
+    for (var i = 0; i < snapshotLines.length; i++) {
+      if (snapshotLines[i].indexOf('radio') !== -1 && snapshotLines[i].indexOf('PRD') !== -1) {
+        prdRadioLine = snapshotLines[i];
+        break;
+      }
+    }
+    if (prdRadioLine) {
+      // 找到 radio 后面的第一个 button ref
+      var afterRadioIdx = snapshot.indexOf(prdRadioLine) + prdRadioLine.length;
+      var afterRadio = snapshot.substring(afterRadioIdx);
+      var btnMatch = afterRadio.match(/button "[^"]*" \[ref=(e\d+)\]/);
+      if (btnMatch) {
+        var editBtnRef = btnMatch[1];
+        agentBrowser('click @' + editBtnRef);
+        var updatedSnapshot = agentBrowser('snapshot') || '';
+        // 提取链接地址
+        var linkTextboxIdx = updatedSnapshot.indexOf('请输入链接地址');
+        if (linkTextboxIdx !== -1) {
+          var afterTextbox = updatedSnapshot.substring(linkTextboxIdx);
+          var urlMatch = afterTextbox.match(/(https?:\/\/[^\s"]+)/);
+          if (urlMatch) {
+            data.docLink = urlMatch[1];
+          }
+        }
+        // 关闭编辑弹窗
+        var cancelMatch = updatedSnapshot.match(/button "取消" \[ref=(e\d+)\]/);
+        if (cancelMatch) {
+          agentBrowser('click @' + cancelMatch[1]);
+        }
+      }
+    }
+    // 备用：直接从快照中查找 km.sankuai.com/collabpage/ 链接
+    if (!data.docLink) {
+      var kmMatch = snapshot.match(/https:\/\/km\.sankuai\.com\/collabpage\/\d+/);
+      if (kmMatch && prdRadioLine) data.docLink = kmMatch[0];
+    }
+  } catch (e) {
+    // 文档链接提取失败，忽略
   }
 
   res.writeHead(200, { ...CORS_HEADERS, 'Content-Type': 'application/json' });

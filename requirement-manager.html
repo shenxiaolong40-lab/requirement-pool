@@ -1171,12 +1171,9 @@ function fillFormFromOnesData(data) {
     document.getElementById('formTitle').value = item.name || item.title || '';
   }
 
-  // 描述
-  if (item.description || item.desc) {
-    var desc = item.description || item.desc || '';
-    // 清理 HTML 标签
-    desc = desc.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-    document.getElementById('formDesc').value = desc.slice(0, 500);
+  // 需求文档链接（从 Ones 需求资产中的 PRD 获取）
+  if (item.docLink && !document.getElementById('formDocLink').value) {
+    document.getElementById('formDocLink').value = item.docLink;
   }
 
   // 优先级映射
