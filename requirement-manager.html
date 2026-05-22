@@ -973,7 +973,7 @@ function updateIterationFilter(all) {
   iterations.sort();
   var html = '<option value="">全部迭代</option>';
   iterations.forEach(function(v) {
-    html += '<option value="' + v + '"' + (currentVal === v ? ' selected' : '') + '>' + v + '迭代</option>';
+    html += '<option value="' + v + '"' + (currentVal === v ? ' selected' : '') + '>' + v + '</option>';
   });
   select.innerHTML = html;
 }
@@ -1027,7 +1027,7 @@ function renderTable(data) {
     html += '<td class="col-create-time">' + r.createDate + '</td>';
     html += '<td class="col-title" title="' + escapeHTML(r.title) + '">' + escapeHTML(r.title) + '</td>';
     html += '<td class="col-doc-link">' + (r.docLink ? '<a href="' + escapeHTML(r.docLink) + '" target="_blank" title="' + escapeHTML(r.docLink) + '">查看文档</a>' : '<span style="color:#C0C4CC">-</span>') + '</td>';
-    html += '<td class="col-iteration">' + (r.iteration ? escapeHTML(r.iteration) + '迭代' : '<span style="color:#C0C4CC">-</span>') + '</td>';
+    html += '<td class="col-iteration">' + (r.iteration ? escapeHTML(r.iteration) : '<span style="color:#C0C4CC">-</span>') + '</td>';
     html += '<td class="col-priority">' + getPriorityBadge(r.priority) + '</td>';
     html += '<td class="col-status">' + getStatusBadge(r.status) + '</td>';
     html += '<td class="col-key-milestone">' + (r.keyMilestone ? escapeHTML(r.keyMilestone) : '<span style="color:#C0C4CC">-</span>') + '</td>';
@@ -1374,7 +1374,7 @@ function exportCSV() {
   }
   var headers = ['创建时间', '标题', '描述', '优先级', '状态', '关键节点', '来源', '创建人', '需求文档', '迭代周期', '更新日期'];
   var rows = data.map(function(r) {
-    return [r.createDate, r.title, r.description, PRIORITY_MAP[r.priority], r.status, r.keyMilestone || '', r.source, r.creator, r.docLink || '', r.iteration ? r.iteration + '迭代' : '', r.updateDate]
+    return [r.createDate, r.title, r.description, PRIORITY_MAP[r.priority], r.status, r.keyMilestone || '', r.source, r.creator, r.docLink || '', r.iteration || '', r.updateDate]
       .map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; })
       .join(',');
   });
