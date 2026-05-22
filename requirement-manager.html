@@ -656,6 +656,14 @@ tbody tr { transition: background var(--transition-fast); }
     <div class="modal-body">
       <input type="hidden" id="formId">
       <div class="form-group">
+        <label>Ones链接 <span style="color:#94A3B8;font-weight:400;font-size:12px;">（粘贴链接自动拉取需求信息）</span></label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="formOnesLink" placeholder="https://ones.sankuai.com/ones/product/.../workItem/requirement/detail/..." maxlength="500" style="flex:1;">
+          <button class="btn btn-default btn-sm" id="btnFetchOnes" onclick="fetchOnesWorkItem()" style="flex-shrink:0;">拉取</button>
+        </div>
+        <div id="onesFetchStatus" style="font-size:12px;margin-top:4px;display:none;"></div>
+      </div>
+      <div class="form-group">
         <label>需求标题 <span class="required">*</span></label>
         <input type="text" id="formTitle" placeholder="请输入需求标题" maxlength="100">
         <div class="form-error" id="titleError">请输入需求标题</div>
@@ -1057,6 +1065,160 @@ function escapeHTML(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+/* ========== 7b. Ones 链接解析 & 数据拉取 ========== */
+function parseOnesUrl(url) {
+  // 支持两种格式:
+  // https://ones.sankuai.com/ones/product/3067/workItem/requirement/detail/94774183
+  // https://ones.sankuai.com/ones/product/3067/workItem/requirement/detail/94774183?activeTabName=first
+  var m = url.match(/ones\.sankuai\.com\/ones\/product\/(\d+)\/workItem\/\w+\/detail\/(\d+)/);
+  if (!m) return null;
+  return { productId: m[1], workItemId: m[2] };
+}
+
+function fetchOnesWorkItem() {
+  var link = document.getElementById('formOnesLink').value.trim();
+  if (!link) return;
+
+  var parsed = parseOnesUrl(link);
+  if (!parsed) {
+    showFetchStatus('Ones 链接格式不正确，无法解析', 'error');
+    return;
+  }
+
+  var btn = document.getElementById('btnFetchOnes');
+  btn.disabled = true;
+  btn.textContent = '拉取中...';
+  showFetchStatus('正在从 Ones 获取需求信息...', 'loading');
+
+  // 尝试多个可能的 API 端点
+  var endpoints = [
+    'https://ones.sankuai.com/ones/api/v1/project/' + parsed.productId + '/workitem/' + parsed.workItemId,
+    'https://ones.sankuai.com/api/v1/project/' + parsed.productId + '/workitem/' + parsed.workItemId,
+    'https://ones.sankuai.com/ones/api/v1/product/' + parsed.productId + '/workitem/' + parsed.workItemId,
+    'https://ones.sankuai.com/api/product/' + parsed.productId + '/workitem/' + parsed.workItemId
+  ];
+
+  tryEndpoint(0);
+
+  function tryEndpoint(index) {
+    if (index >= endpoints.length) {
+      btn.disabled = false;
+      btn.textContent = '拉取';
+      showFetchStatus('所有 API 端点均无法访问。请确认已登录 Ones 且允许跨域请求。', 'error');
+      return;
+    }
+
+    fetch(endpoints[index], { credentials: 'include' })
+      .then(function(resp) {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.json();
+      })
+      .then(function(json) {
+        if (json && json.status === 200) {
+          fillFormFromOnesData(json.data);
+          btn.disabled = false;
+          btn.textContent = '拉取';
+          showFetchStatus('已成功获取需求信息', 'success');
+        } else if (json && json.code === 200) {
+          fillFormFromOnesData(json.data);
+          btn.disabled = false;
+          btn.textContent = '拉取';
+          showFetchStatus('已成功获取需求信息', 'success');
+        } else {
+          throw new Error('Unexpected response');
+        }
+      })
+      .catch(function(err) {
+        // CORS 错误或网络错误，尝试下一个端点
+        if (err.message.indexOf('Failed to fetch') !== -1 || err.message.indexOf('NetworkError') !== -1) {
+          tryEndpoint(index + 1);
+        } else {
+          tryEndpoint(index + 1);
+        }
+      });
+  }
+}
+
+function fillFormFromOnesData(data) {
+  // Ones API 响应通常把 workItem 信息放在 data.workItem 或直接放在 data 中
+  var item = (data && data.workItem) ? data.workItem : data;
+  if (!item) return;
+
+  // 标题
+  if (item.name || item.title) {
+    document.getElementById('formTitle').value = item.name || item.title || '';
+  }
+
+  // 描述
+  if (item.description || item.desc) {
+    var desc = item.description || item.desc || '';
+    // 清理 HTML 标签
+    desc = desc.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    document.getElementById('formDesc').value = desc.slice(0, 500);
+  }
+
+  // 优先级映射
+  if (item.priority) {
+    var priName = (typeof item.priority === 'object') ? (item.priority.name || item.priority.label || '') : String(item.priority);
+    var priMap = {
+      '紧急': 'P0', '高': 'P1', '中': 'P2', '低': 'P3',
+      'urgent': 'P0', 'high': 'P1', 'medium': 'P2', 'low': 'P3',
+      'P0': 'P0', 'P1': 'P1', 'P2': 'P2', 'P3': 'P3'
+    };
+    var mapped = priMap[priName] || 'P1';
+    document.getElementById('formPriority').value = mapped;
+  }
+
+  // 状态映射
+  if (item.status) {
+    var stName = (typeof item.status === 'object') ? (item.status.name || item.status.label || '') : String(item.status);
+    var stMap = {
+      '规划中': '待评审', '待评审': '待评审', '评审中': '待评审',
+      '待开发': '待开发', '开发中': '开发中', '实现中': '开发中',
+      '已完成': '已完成', '已发布': '已完成', '已上线': '已完成',
+      '已取消': '已取消', '已拒绝': '已取消'
+    };
+    var stMapped = stMap[stName] || '待评审';
+    document.getElementById('formStatus').value = stMapped;
+  }
+
+  // 迭代
+  if (item.iteration) {
+    var iterName = (typeof item.iteration === 'object') ? (item.iteration.name || item.iteration.label || '') : String(item.iteration);
+    document.getElementById('formIteration').value = iterName.slice(0, 20);
+  }
+
+  // 创建人/负责人
+  if (item.owner || item.owners || item.creator || item.assignee) {
+    var owner = item.owner || item.creator || item.assignee;
+    if (Array.isArray(owner)) {
+      owner = owner.map(function(o) { return (typeof o === 'object') ? (o.name || o.username || '') : o; }).filter(Boolean).join(',');
+    } else if (typeof owner === 'object') {
+      owner = owner.name || owner.username || '';
+    }
+    if (owner && !document.getElementById('formCreator').value) {
+      document.getElementById('formCreator').value = String(owner).slice(0, 20);
+    }
+  }
+
+  // 关键节点（从计划完成时间获取）
+  if (item.dueDate || item.deadline || item.plannedEndDate || item.endDate) {
+    var d = item.dueDate || item.deadline || item.plannedEndDate || item.endDate;
+    if (d && !document.getElementById('formKeyMilestone').value) {
+      document.getElementById('formKeyMilestone').value = String(d).slice(0, 50);
+    }
+  }
+
+  document.getElementById('titleError').style.display = 'none';
+}
+
+function showFetchStatus(msg, type) {
+  var el = document.getElementById('onesFetchStatus');
+  el.style.display = 'block';
+  el.textContent = msg;
+  el.style.color = type === 'error' ? '#EF4444' : type === 'success' ? '#16A34A' : '#3B82F6';
+}
+
 /* ========== 8. 弹窗控制 ========== */
 var editingId = null;
 
@@ -1083,6 +1245,7 @@ function openModal(id) {
   } else {
     document.getElementById('modalTitle').textContent = '新增需求';
     document.getElementById('formId').value = '';
+    document.getElementById('formOnesLink').value = '';
     document.getElementById('formTitle').value = '';
     document.getElementById('formDesc').value = '';
     document.getElementById('formPriority').value = 'P1';
@@ -1095,6 +1258,9 @@ function openModal(id) {
   }
 
   document.getElementById('titleError').style.display = 'none';
+  document.getElementById('onesFetchStatus').style.display = 'none';
+  document.getElementById('btnFetchOnes').disabled = false;
+  document.getElementById('btnFetchOnes').textContent = '拉取';
   setTimeout(function() { document.getElementById('formTitle').focus(); }, 100);
 }
 
@@ -1364,6 +1530,19 @@ deleteConfirm = function(id) { requireAdmin(function() { _deleteConfirm(id); });
   loadAll();
   updateAdminUI();
   refreshUI();
+
+  // Ones 链接粘贴自动拉取
+  var onesInput = document.getElementById('formOnesLink');
+  if (onesInput) {
+    onesInput.addEventListener('paste', function() {
+      setTimeout(function() {
+        var val = onesInput.value.trim();
+        if (val && parseOnesUrl(val)) {
+          fetchOnesWorkItem();
+        }
+      }, 100);
+    });
+  }
 })();
 </script>
 
