@@ -1474,13 +1474,18 @@ document.getElementById('noPermOverlay').addEventListener('click', function(e) {
 });
 
 /* ========== 13. 管理员权限控制 ========== */
-var isAdmin = false;
+var isAdmin = localStorage.getItem('reqpool_is_admin') === 'true';
 var ADMIN_PASSWORD = 'xiaolong';
+
+function setAdmin(state) {
+  isAdmin = state;
+  localStorage.setItem('reqpool_is_admin', state ? 'true' : 'false');
+  updateAdminUI();
+}
 
 function toggleAdmin() {
   if (isAdmin) {
-    isAdmin = false;
-    updateAdminUI();
+    setAdmin(false);
     showToast('已退出管理模式，当前为只读', 'error');
   } else {
     openAdmin();
@@ -1500,8 +1505,7 @@ function closeAdmin() {
 function adminLogin() {
   var pwd = document.getElementById('adminPassword').value.trim();
   if (pwd === ADMIN_PASSWORD) {
-    isAdmin = true;
-    updateAdminUI();
+    setAdmin(true);
     closeAdmin();
     showToast('管理员登录成功，已获得编辑权限');
   } else {
