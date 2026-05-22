@@ -603,6 +603,9 @@ tbody tr { transition: background var(--transition-fast); }
       <option value="">全部迭代</option>
     </select>
     <button class="btn btn-default btn-sm" onclick="exportCSV()">导出 CSV</button>
+	    <button class="btn btn-default btn-sm" onclick="exportBackup()">导出备份</button>
+	    <button class="btn btn-default btn-sm" onclick="document.getElementById('importFile').click()">导入备份</button>
+	    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
   </div>
 
   <!-- 表格 -->
@@ -808,14 +811,17 @@ function generateDemoData() {
 function loadAll() {
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      var demo = generateDemoData();
-      saveAll(demo);
-      return demo;
-    }
+    if (!raw) return [];
     return JSON.parse(raw);
   } catch(e) {
-    return generateDemoData();
+    // 数据损坏时自动备份，避免静默丢失用户数据
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      var backupKey = STORAGE_KEY + '_backup_' + new Date().toISOString().slice(0,10).replace(/-/g,'');
+      try { localStorage.setItem(backupKey, raw); } catch(ignore) {}
+      alert('⚠️ 数据读取异常，原始数据已自动备份到「' + backupKey + '」。\n\n请打开浏览器开发者工具 → Application → Local Storage，找到备份数据后联系管理员恢复。\n\n当前将显示空列表，不会覆盖您的数据。');
+    }
+    return [];
   }
 }
 
@@ -1197,6 +1203,58 @@ function exportCSV() {
   a.click();
   URL.revokeObjectURL(url);
   showToast('CSV 导出成功');
+}
+
+/* ========== 11b. 数据备份 & 恢复 ========== */
+function exportBackup() {
+  var all = loadAll();
+  if (all.length === 0) {
+    showToast('没有可导出的数据', 'error');
+    return;
+  }
+  var backup = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    count: all.length,
+    data: all
+  };
+  var json = JSON.stringify(backup, null, 2);
+  var blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var dateStr = new Date().toISOString().slice(0,16).replace(/[:-]/g,'').replace('T','-');
+  a.download = 'requirements-备份-' + dateStr + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据备份导出成功（' + all.length + ' 条需求）');
+}
+
+function importBackup(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var backup = JSON.parse(e.target.result);
+      if (!backup.data || !Array.isArray(backup.data)) {
+        throw new Error('备份文件格式不正确');
+      }
+      var current = loadAll();
+      if (current.length > 0) {
+        if (!confirm('当前已有 ' + current.length + ' 条需求数据。\n\n导入备份将覆盖现有数据，是否继续？')) {
+          event.target.value = '';
+          return;
+        }
+      }
+      saveAll(backup.data);
+      refreshUI();
+      showToast('备份导入成功（' + backup.data.length + ' 条需求）');
+    } catch(err) {
+      showToast('备份文件解析失败: ' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
 
 /* ========== 12. 键盘 & 遮罩关闭 ========== */
