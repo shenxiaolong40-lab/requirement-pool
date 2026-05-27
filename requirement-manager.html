@@ -196,6 +196,7 @@ a:hover { text-decoration: underline; }
 .stat-card.status-pending::before { background: var(--color-warning); }
 .stat-card.status-dev::before { background: var(--color-primary); }
 .stat-card.status-progress::before { background: #3B82F6; }
+.stat-card.status-testing::before { background: #8B5CF6; }
 .stat-card.status-done::before { background: var(--color-success); }
 .stat-card.status-cancel::before { background: var(--color-text-muted); }
 .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
@@ -216,6 +217,7 @@ a:hover { text-decoration: underline; }
 .stat-card.p3 .stat-count { color: var(--color-p3); }
 .stat-card.status-pending .stat-count { color: var(--color-warning); }
 .stat-card.status-dev .stat-count { color: var(--color-primary); }
+.stat-card.status-testing .stat-count { color: #8B5CF6; }
 .stat-card.status-done .stat-count { color: var(--color-success); }
 .stat-card.status-cancel .stat-count { color: var(--color-text-muted); }
 
@@ -348,6 +350,7 @@ tbody tr { transition: background var(--transition-fast); }
 .badge-status-pending { background: #FFFBEB; color: #D97706; }
 .badge-status-todo { background: var(--color-primary-light); color: var(--color-primary); }
 .badge-status-progress { background: #EFF6FF; color: #3B82F6; }
+.badge-status-testing { background: #F5F3FF; color: #7C3AED; }
 .badge-status-done { background: var(--color-success-bg); color: #16A34A; }
 .badge-status-cancel { background: #F8FAFC; color: var(--color-text-muted); }
 
@@ -596,7 +599,8 @@ tbody tr { transition: background var(--transition-fast); }
       <option value="待评审">待评审</option>
       <option value="待开发">待开发</option>
       <option value="开发中">开发中</option>
-      <option value="已完成">已完成</option>
+      <option value="测试中">测试中</option>
+      <option value="已上线">已上线</option>
       <option value="已取消">已取消</option>
     </select>
     <select class="filter-select" id="filterIteration" onchange="onFilter()">
@@ -688,7 +692,8 @@ tbody tr { transition: background var(--transition-fast); }
             <option value="待评审">待评审</option>
             <option value="待开发">待开发</option>
             <option value="开发中">开发中</option>
-            <option value="已完成">已完成</option>
+            <option value="测试中">测试中</option>
+            <option value="已上线">已上线</option>
             <option value="已取消">已取消</option>
           </select>
         </div>
@@ -777,7 +782,7 @@ tbody tr { transition: background var(--transition-fast); }
 /* ========== 1. 常量 & 枚举映射 ========== */
 const PRIORITY_MAP = { 'P0': 'P0 紧急', 'P1': 'P1 高', 'P2': 'P2 中', 'P3': 'P3 低' };
 const PRIORITY_ORDER = { 'P0': 4, 'P1': 3, 'P2': 2, 'P3': 1 };
-const STATUS_ORDER = { '待评审': 1, '待开发': 2, '开发中': 3, '已完成': 4, '已取消': 5 };
+const STATUS_ORDER = { '待评审': 1, '待开发': 2, '开发中': 3, '测试中': 4, '已上线': 5, '已取消': 6, '已完成': 5 };
 const STORAGE_KEY = 'requirement_pool_data';
 const STORAGE_META_KEY = 'requirement_pool_meta';
 
@@ -804,10 +809,10 @@ function generateDemoData() {
     { id: 'REQ-20260515-001', title: '用户登录页体验优化', description: '优化登录页面的加载速度，简化登录流程，支持手机号验证码登录', priority: 'P0', status: '开发中', source: '用户反馈', creator: '张三', docLink: 'https://doc.example.com/login-optimization', iteration: '0611', keyMilestone: '2026/06/11上线', createDate: dateStr(6), updateDate: dateStr(2) },
     { id: 'REQ-20260515-002', title: '数据看板实时刷新功能', description: '在运营数据看板中增加实时数据刷新能力，支持自定义刷新频率', priority: 'P0', status: '待评审', source: '领导要求', creator: '李四', docLink: '', iteration: '0611', keyMilestone: '2026/06/30评审', createDate: dateStr(5), updateDate: dateStr(5) },
     { id: 'REQ-20260516-003', title: '订单列表导出性能优化', description: '当前导出超过1万条订单数据时页面卡顿，需要优化导出逻辑支持异步处理', priority: 'P1', status: '待开发', source: '内部需求', creator: '王五', docLink: 'https://doc.example.com/export-optimization', iteration: '0528', keyMilestone: '', createDate: dateStr(4), updateDate: dateStr(3) },
-    { id: 'REQ-20260517-004', title: '竞品分析-会员体系对比', description: '对比主要竞品的会员权益体系，输出差异化方案并推动落地', priority: 'P1', status: '已完成', source: '竞品分析', creator: '张三', docLink: 'https://doc.example.com/vip-analysis', iteration: '0528', keyMilestone: '2026/05/28上线', createDate: dateStr(3), updateDate: dateStr(1) },
+    { id: 'REQ-20260517-004', title: '竞品分析-会员体系对比', description: '对比主要竞品的会员权益体系，输出差异化方案并推动落地', priority: 'P1', status: '已上线', source: '竞品分析', creator: '张三', docLink: 'https://doc.example.com/vip-analysis', iteration: '0528', keyMilestone: '2026/05/28上线', createDate: dateStr(3), updateDate: dateStr(1) },
     { id: 'REQ-20260518-005', title: '修复iOS端首页白屏问题', description: '部分iOS 17用户打开首页时出现白屏，需要排查原因并修复', priority: 'P2', status: '待评审', source: '用户反馈', creator: '赵六', docLink: '', iteration: '', keyMilestone: '2026/06/15修复', createDate: dateStr(2), updateDate: dateStr(2) },
     { id: 'REQ-20260518-006', title: '搜索结果页增加筛选条件', description: '在搜索结果页增加价格区间、品牌、评分等筛选维度，提升用户筛选效率', priority: 'P2', status: '开发中', source: '数据分析', creator: '李四', docLink: 'https://doc.example.com/search-filter', iteration: '0611', keyMilestone: '2026/06/11上线', createDate: dateStr(2), updateDate: dateStr(1) },
-    { id: 'REQ-20260519-007', title: '后台管理系统操作日志', description: '记录管理员所有关键操作日志，支持查询和导出，用于安全审计', priority: 'P3', status: '已完成', source: '内部需求', creator: '王五', docLink: '', iteration: '0528', keyMilestone: '', createDate: dateStr(1), updateDate: dateStr(0) },
+    { id: 'REQ-20260519-007', title: '后台管理系统操作日志', description: '记录管理员所有关键操作日志，支持查询和导出，用于安全审计', priority: 'P3', status: '已上线', source: '内部需求', creator: '王五', docLink: '', iteration: '0528', keyMilestone: '', createDate: dateStr(1), updateDate: dateStr(0) },
     { id: 'REQ-20260520-008', title: '页面加载loading动画优化', description: '统一各页面loading动画风格，使用品牌元素替换默认菊花图', priority: 'P3', status: '已取消', source: '内部需求', creator: '赵六', docLink: '', iteration: '', keyMilestone: '', createDate: dateStr(0), updateDate: dateStr(0) }
   ];
   meta.counter = data.length;
@@ -816,11 +821,20 @@ function generateDemoData() {
 }
 
 /* ========== 3. DataStore ========== */
+function migrateData(data) {
+  var changed = false;
+  data.forEach(function(item) {
+    if (item.status === '已完成') { item.status = '已上线'; changed = true; }
+  });
+  if (changed) saveAll(data);
+  return data;
+}
+
 function loadAll() {
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
-    return JSON.parse(raw);
+    return migrateData(JSON.parse(raw));
   } catch(e) {
     // 数据损坏时自动备份，避免静默丢失用户数据
     var raw = localStorage.getItem(STORAGE_KEY);
@@ -989,8 +1003,8 @@ function renderStats(all, filtered) {
   document.getElementById('priorityStats').innerHTML = priHTML;
 
   // 状态统计
-  var statusKeys = ['待评审', '待开发', '开发中', '已完成', '已取消'];
-  var statusClassMap = { '待评审': 'status-pending', '待开发': 'status-dev', '开发中': 'status-progress', '已完成': 'status-done', '已取消': 'status-cancel' };
+  var statusKeys = ['待评审', '待开发', '开发中', '测试中', '已上线', '已取消'];
+  var statusClassMap = { '待评审': 'status-pending', '待开发': 'status-dev', '开发中': 'status-progress', '测试中': 'status-testing', '已上线': 'status-done', '已取消': 'status-cancel', '已完成': 'status-done' };
   var stCounts = {};
   all.forEach(function(r) { stCounts[r.status] = (stCounts[r.status] || 0) + 1; });
   var stHTML = '';
@@ -1006,7 +1020,7 @@ function getPriorityBadge(p) {
 }
 
 function getStatusBadge(s) {
-  var map = { '待评审': 'badge-status-pending', '待开发': 'badge-status-todo', '开发中': 'badge-status-progress', '已完成': 'badge-status-done', '已取消': 'badge-status-cancel' };
+  var map = { '待评审': 'badge-status-pending', '待开发': 'badge-status-todo', '开发中': 'badge-status-progress', '测试中': 'badge-status-testing', '已上线': 'badge-status-done', '已取消': 'badge-status-cancel', '已完成': 'badge-status-done' };
   return '<span class="badge ' + (map[s] || '') + '">' + s + '</span>';
 }
 
@@ -1194,7 +1208,7 @@ function fillFormFromOnesData(data) {
     var stMap = {
       '规划中': '待评审', '待评审': '待评审', '评审中': '待评审',
       '待开发': '待开发', '开发中': '开发中', '实现中': '开发中',
-      '已完成': '已完成', '已发布': '已完成', '已上线': '已完成',
+      '已完成': '已上线', '已发布': '已上线', '已上线': '已上线',
       '已取消': '已取消', '已拒绝': '已取消'
     };
     var stMapped = stMap[stName] || '待评审';
@@ -1431,6 +1445,7 @@ function importBackup(event) {
           return;
         }
       }
+      migrateData(backup.data);
       saveAll(backup.data);
       refreshUI();
       showToast('备份导入成功（' + backup.data.length + ' 条需求）');
