@@ -7,9 +7,9 @@
 <style>
 /* ========== 1. CSS 变量 ========== */
 :root {
-  --color-primary: #FFDD00;
-  --color-primary-light: #FFFADB;
-  --color-primary-dark: #7A3100;
+  --color-primary: #0A77F5;
+  --color-primary-light: #F0F7FF;
+  --color-primary-dark: #056CE3;
   --color-bg: #F5F5F5;
   --color-surface: #FFFFFF;
   --color-border: #E5E5E5;
@@ -26,12 +26,12 @@
   --color-p1: #FF7700;
   --color-p1-bg: #FFF3E0;
   --color-p2: #0A77F5;
-  --color-p2-bg: #E8F1FF;
-  --color-p3: #888888;
-  --color-p3-bg: #F5F5F5;
-  --color-table-header: #F5F5F5;
-  --color-table-hover: #FFFADB;
-  --color-table-stripe: #F9F9F9;
+  --color-p2-bg: #F0F7FF;
+  --color-p3: #999999;
+  --color-p3-bg: #FAFAFA;
+  --color-table-header: #FAFAFA;
+  --color-table-hover: #F0F7FF;
+  --color-table-stripe: #FAFAFA;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -115,11 +115,11 @@ a:hover { text-decoration: underline; }
 .btn:active { transform: scale(0.97); }
 .btn-primary {
   background: var(--color-primary);
-  color: var(--color-primary-dark);
+  color: #fff;
   border-color: var(--color-primary);
-  box-shadow: 0 2px 6px rgba(255,221,0,0.4);
+  box-shadow: 0 2px 6px rgba(10,119,245,0.25);
 }
-.btn-primary:hover { background: #FFE833; box-shadow: 0 4px 10px rgba(255,221,0,0.5); }
+.btn-primary:hover { background: var(--color-primary-dark); box-shadow: 0 4px 10px rgba(10,119,245,0.35); }
 .btn-default {
   background: var(--color-surface);
   color: var(--color-text-secondary);
@@ -250,7 +250,7 @@ a:hover { text-decoration: underline; }
   transition: all var(--transition-fast);
   outline: none;
 }
-.search-box input:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(255,221,0,0.2); }
+.search-box input:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(10,119,245,0.12); }
 .search-box .search-icon {
   position: absolute;
   left: 12px;
@@ -278,7 +278,7 @@ a:hover { text-decoration: underline; }
   min-width: 110px;
   transition: all var(--transition-fast);
 }
-.filter-select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(255,221,0,0.2); }
+.filter-select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(10,119,245,0.12); }
 
 /* ========== 7. 表格 ========== */
 .table-container {
@@ -347,11 +347,11 @@ tbody tr { transition: background var(--transition-fast); }
 .badge-p2 { background: var(--color-p2-bg); color: var(--color-p2); }
 .badge-p3 { background: var(--color-p3-bg); color: var(--color-p3); }
 .badge-status-pending { background: #FFF3E0; color: #FF7700; }
-.badge-status-todo { background: var(--color-primary-light); color: var(--color-primary-dark); }
-.badge-status-progress { background: #E8F1FF; color: #0A77F5; }
+.badge-status-todo { background: var(--color-primary-light); color: var(--color-primary); }
+.badge-status-progress { background: #F0F7FF; color: #0A77F5; }
 .badge-status-testing { background: #F5F3FF; color: #7C3AED; }
 .badge-status-done { background: var(--color-success-bg); color: #00B300; }
-.badge-status-cancel { background: #F5F5F5; color: var(--color-text-muted); }
+.badge-status-cancel { background: #FAFAFA; color: var(--color-text-muted); }
 
 /* ========== 9. 弹窗 ========== */
 .modal-overlay {
@@ -386,7 +386,7 @@ tbody tr { transition: background var(--transition-fast); }
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid var(--color-border);
-  background: #F5F5F5;
+  background: #FAFAFA;
 }
 .modal-header h3 { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text); }
 .modal-close {
@@ -428,7 +428,7 @@ tbody tr { transition: background var(--transition-fast); }
 }
 .form-group input:focus,
 .form-group textarea:focus,
-.form-group select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(255,221,0,0.2); }
+.form-group select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(10,119,245,0.12); }
 .form-group textarea { resize: vertical; min-height: 80px; }
 .form-group select {
   appearance: none;
