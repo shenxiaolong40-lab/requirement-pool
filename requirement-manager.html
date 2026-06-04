@@ -101,59 +101,52 @@ a:hover { text-decoration: underline; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  height: 32px;
+  padding: 0 12px;
   font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  font-weight: 400;
   font-family: inherit;
   border: 1px solid transparent;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
   white-space: nowrap;
   user-select: none;
 }
-.btn:active { opacity: 0.5; }
 .btn-primary {
-  padding: 7px 15px;
-  border-radius: 17px;
-  background: #FFDD00;
-  color: #7A3100;
-  border-color: #FFDD00;
+  background: #0A77F5;
+  color: #fff;
+  border-color: #0A77F5;
 }
-.btn-primary:hover { background: #FFE833; border-color: #FFE833; }
+.btn-primary:hover { background: #056CE3; border-color: #056CE3; }
+.btn-primary:active { background: #044DAA; border-color: #044DAA; }
 .btn-default {
-  padding: 5px 15px;
-  border-radius: 15px;
   background: #fff;
   color: #111111;
-  border-color: #CCCCCC;
+  border-color: #E5E5E5;
 }
-.btn-default:hover {
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  background: var(--color-primary-light);
-}
+.btn-default:hover { color: #0A77F5; border-color: #0A77F5; background: #F0F7FF; }
 .btn-danger {
-  padding: 5px 15px;
-  border-radius: 15px;
-  background: var(--color-danger);
+  background: #FF2D19;
   color: #fff;
-  border-color: var(--color-danger);
+  border-color: #FF2D19;
 }
-.btn-danger:hover { background: #E0210F; border-color: #E0210F; }
+.btn-danger:hover { background: #E6200F; border-color: #E6200F; }
 .btn-text {
   background: none;
   border: none;
-  color: var(--color-primary);
+  color: #0A77F5;
+  height: auto;
   padding: 4px 8px;
   font-size: var(--font-size-sm);
-  font-weight: 500;
-  border-radius: var(--radius-sm);
+  font-weight: 400;
+  border-radius: 4px;
 }
-.btn-text:hover { background: #FFFADB; }
+.btn-text:hover { background: #F0F7FF; }
 .btn-text.danger { color: var(--color-danger); }
-.btn-text.danger:hover { background: var(--color-danger-bg); }
-.btn-sm { padding: 4px 12px !important; border-radius: 12px !important; font-size: 12px !important; line-height: 16px !important; }
-.btn:disabled { opacity: 1; cursor: not-allowed; background: #F0F0F0 !important; color: #C2C2C2 !important; border-color: #F0F0F0 !important; }
+.btn-text.danger:hover { background: #FFF1F0; }
+.btn-sm { height: 28px; padding: 0 8px; font-size: 12px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
 /* ========== 5. 统计面板 ========== */
 .stats-section { margin-bottom: var(--spacing-md); }
