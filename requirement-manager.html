@@ -7,31 +7,31 @@
 <style>
 /* ========== 1. CSS 变量 ========== */
 :root {
-  --color-primary: #3B82F6;
-  --color-primary-light: #EFF6FF;
-  --color-primary-dark: #2563EB;
-  --color-bg: #F0F4FF;
+  --color-primary: #FFDD00;
+  --color-primary-light: #FFFADB;
+  --color-primary-dark: #7A3100;
+  --color-bg: #F5F5F5;
   --color-surface: #FFFFFF;
-  --color-border: #E2E8F0;
-  --color-text: #1E293B;
-  --color-text-secondary: #64748B;
-  --color-text-muted: #94A3B8;
-  --color-success: #22C55E;
-  --color-success-bg: #F0FDF4;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --color-danger-bg: #FEF2F2;
-  --color-p0: #EF4444;
-  --color-p0-bg: #FEF2F2;
-  --color-p1: #F59E0B;
-  --color-p1-bg: #FFFBEB;
-  --color-p2: #3B82F6;
-  --color-p2-bg: #EFF6FF;
-  --color-p3: #94A3B8;
-  --color-p3-bg: #F8FAFC;
-  --color-table-header: #F8FAFC;
-  --color-table-hover: #EFF6FF;
-  --color-table-stripe: #F8FAFC;
+  --color-border: #E5E5E5;
+  --color-text: #111111;
+  --color-text-secondary: #555555;
+  --color-text-muted: #888888;
+  --color-success: #00B300;
+  --color-success-bg: #E6F7E6;
+  --color-warning: #FF7700;
+  --color-danger: #FF2D19;
+  --color-danger-bg: #FFF0EE;
+  --color-p0: #FF2D19;
+  --color-p0-bg: #FFF0EE;
+  --color-p1: #FF7700;
+  --color-p1-bg: #FFF3E0;
+  --color-p2: #0A77F5;
+  --color-p2-bg: #E8F1FF;
+  --color-p3: #888888;
+  --color-p3-bg: #F5F5F5;
+  --color-table-header: #F5F5F5;
+  --color-table-hover: #FFFADB;
+  --color-table-stripe: #F9F9F9;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -60,8 +60,7 @@ body {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
   color: var(--color-text);
-  background: linear-gradient(135deg, #F0F4FF 0%, #E8EEFB 50%, #F0F4FF 100%);
-  background-attachment: fixed;
+  background: #F5F5F5;
   line-height: 1.6;
   min-height: 100vh;
 }
@@ -116,11 +115,11 @@ a:hover { text-decoration: underline; }
 .btn:active { transform: scale(0.97); }
 .btn-primary {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-dark);
   border-color: var(--color-primary);
-  box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+  box-shadow: 0 2px 6px rgba(255,221,0,0.4);
 }
-.btn-primary:hover { background: var(--color-primary-dark); box-shadow: 0 4px 10px rgba(59,130,246,0.35); }
+.btn-primary:hover { background: #FFE833; box-shadow: 0 4px 10px rgba(255,221,0,0.5); }
 .btn-default {
   background: var(--color-surface);
   color: var(--color-text-secondary);
@@ -136,7 +135,7 @@ a:hover { text-decoration: underline; }
   color: #fff;
   border-color: var(--color-danger);
 }
-.btn-danger:hover { background: #DC2626; }
+.btn-danger:hover { background: #E0210F; }
 .btn-text {
   background: none;
   border: none;
@@ -195,7 +194,7 @@ a:hover { text-decoration: underline; }
 .stat-card.p3::before { background: var(--color-p3); }
 .stat-card.status-pending::before { background: var(--color-warning); }
 .stat-card.status-dev::before { background: var(--color-primary); }
-.stat-card.status-progress::before { background: #3B82F6; }
+.stat-card.status-progress::before { background: #0A77F5; }
 .stat-card.status-testing::before { background: #8B5CF6; }
 .stat-card.status-done::before { background: var(--color-success); }
 .stat-card.status-cancel::before { background: var(--color-text-muted); }
@@ -246,12 +245,12 @@ a:hover { text-decoration: underline; }
   font-family: inherit;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: #F8FAFC;
+  background: #F9F9F9;
   color: var(--color-text);
   transition: all var(--transition-fast);
   outline: none;
 }
-.search-box input:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.search-box input:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(255,221,0,0.2); }
 .search-box .search-icon {
   position: absolute;
   left: 12px;
@@ -267,19 +266,19 @@ a:hover { text-decoration: underline; }
   font-family: inherit;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: #F8FAFC;
+  background: #F9F9F9;
   color: var(--color-text);
   cursor: pointer;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   min-width: 110px;
   transition: all var(--transition-fast);
 }
-.filter-select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.filter-select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(255,221,0,0.2); }
 
 /* ========== 7. 表格 ========== */
 .table-container {
@@ -296,13 +295,13 @@ table {
   font-size: var(--font-size-base);
 }
 thead th {
-  background: #F8FAFC;
+  background: var(--color-table-header);
   padding: 12px 14px;
   text-align: left;
   font-weight: 600;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-  border-bottom: 2px solid #DBEAFE;
+  border-bottom: 2px solid var(--color-border);
   white-space: nowrap;
   user-select: none;
 }
@@ -313,7 +312,7 @@ thead th.sorted { color: var(--color-primary); }
 thead th.sorted .sort-arrow { color: var(--color-primary); }
 tbody td {
   padding: 12px 14px;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #F0F0F0;
   vertical-align: middle;
 }
 tbody tr:nth-child(even) { background: var(--color-table-stripe); }
@@ -347,12 +346,12 @@ tbody tr { transition: background var(--transition-fast); }
 .badge-p1 { background: var(--color-p1-bg); color: var(--color-p1); }
 .badge-p2 { background: var(--color-p2-bg); color: var(--color-p2); }
 .badge-p3 { background: var(--color-p3-bg); color: var(--color-p3); }
-.badge-status-pending { background: #FFFBEB; color: #D97706; }
-.badge-status-todo { background: var(--color-primary-light); color: var(--color-primary); }
-.badge-status-progress { background: #EFF6FF; color: #3B82F6; }
+.badge-status-pending { background: #FFF3E0; color: #FF7700; }
+.badge-status-todo { background: var(--color-primary-light); color: var(--color-primary-dark); }
+.badge-status-progress { background: #E8F1FF; color: #0A77F5; }
 .badge-status-testing { background: #F5F3FF; color: #7C3AED; }
-.badge-status-done { background: var(--color-success-bg); color: #16A34A; }
-.badge-status-cancel { background: #F8FAFC; color: var(--color-text-muted); }
+.badge-status-done { background: var(--color-success-bg); color: #00B300; }
+.badge-status-cancel { background: #F5F5F5; color: var(--color-text-muted); }
 
 /* ========== 9. 弹窗 ========== */
 .modal-overlay {
@@ -387,7 +386,7 @@ tbody tr { transition: background var(--transition-fast); }
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid var(--color-border);
-  background: #F8FAFC;
+  background: #F5F5F5;
 }
 .modal-header h3 { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text); }
 .modal-close {
@@ -423,18 +422,18 @@ tbody tr { transition: background var(--transition-fast); }
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   color: var(--color-text);
-  background: #F8FAFC;
+  background: #F9F9F9;
   outline: none;
   transition: all var(--transition-fast);
 }
 .form-group input:focus,
 .form-group textarea:focus,
-.form-group select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.form-group select:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 3px rgba(255,221,0,0.2); }
 .form-group textarea { resize: vertical; min-height: 80px; }
 .form-group select {
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 34px;
@@ -507,8 +506,8 @@ tbody tr { transition: background var(--transition-fast); }
   pointer-events: auto;
   animation: toastIn 0.3s ease, toastOut 0.3s ease 2.2s forwards;
 }
-.toast-success { background: var(--color-success-bg); color: #16A34A; border: 1px solid #BBF7D0; }
-.toast-error { background: var(--color-danger-bg); color: #DC2626; border: 1px solid #FECACA; }
+.toast-success { background: var(--color-success-bg); color: #00B300; border: 1px solid #99DDA0; }
+.toast-error { background: var(--color-danger-bg); color: #FF2D19; border: 1px solid #FFAAA4; }
 @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-12px); } }
 
@@ -660,7 +659,7 @@ tbody tr { transition: background var(--transition-fast); }
     <div class="modal-body">
       <input type="hidden" id="formId">
       <div class="form-group">
-        <label>Ones链接 <span style="color:#94A3B8;font-weight:400;font-size:12px;">（粘贴链接自动拉取需求信息）</span></label>
+        <label>Ones链接 <span style="color:#888888;font-weight:400;font-size:12px;">（粘贴链接自动拉取需求信息）</span></label>
         <div style="display:flex;gap:8px;">
           <input type="text" id="formOnesLink" placeholder="https://ones.sankuai.com/ones/product/.../workItem/requirement/detail/..." maxlength="500" style="flex:1;">
           <button class="btn btn-default btn-sm" id="btnFetchOnes" onclick="fetchOnesWorkItem()" style="flex-shrink:0;">拉取</button>
@@ -1249,7 +1248,7 @@ function showFetchStatus(msg, type) {
   var el = document.getElementById('onesFetchStatus');
   el.style.display = 'block';
   el.textContent = msg;
-  el.style.color = type === 'error' ? '#EF4444' : type === 'success' ? '#16A34A' : '#3B82F6';
+  el.style.color = type === 'error' ? '#FF2D19' : type === 'success' ? '#00B300' : '#0A77F5';
 }
 
 /* ========== 8. 弹窗控制 ========== */
