@@ -101,29 +101,31 @@ a:hover { text-decoration: underline; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 18px;
-  font-size: var(--font-size-base);
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 500;
   font-family: inherit;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
   user-select: none;
 }
-.btn:active { transform: scale(0.97); }
+.btn:active { opacity: 0.5; }
 .btn-primary {
-  background: var(--color-primary);
-  color: #fff;
-  border-color: var(--color-primary);
-  box-shadow: 0 2px 6px rgba(10,119,245,0.25);
+  padding: 7px 15px;
+  border-radius: 17px;
+  background: #FFDD00;
+  color: #7A3100;
+  border-color: #FFDD00;
 }
-.btn-primary:hover { background: var(--color-primary-dark); box-shadow: 0 4px 10px rgba(10,119,245,0.35); }
+.btn-primary:hover { background: #FFE833; border-color: #FFE833; }
 .btn-default {
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  border-color: var(--color-border);
+  padding: 5px 15px;
+  border-radius: 15px;
+  background: #fff;
+  color: #111111;
+  border-color: #CCCCCC;
 }
 .btn-default:hover {
   color: var(--color-primary);
@@ -131,11 +133,13 @@ a:hover { text-decoration: underline; }
   background: var(--color-primary-light);
 }
 .btn-danger {
+  padding: 5px 15px;
+  border-radius: 15px;
   background: var(--color-danger);
   color: #fff;
   border-color: var(--color-danger);
 }
-.btn-danger:hover { background: #E0210F; }
+.btn-danger:hover { background: #E0210F; border-color: #E0210F; }
 .btn-text {
   background: none;
   border: none;
@@ -145,11 +149,11 @@ a:hover { text-decoration: underline; }
   font-weight: 500;
   border-radius: var(--radius-sm);
 }
-.btn-text:hover { background: var(--color-primary-light); }
+.btn-text:hover { background: #FFFADB; }
 .btn-text.danger { color: var(--color-danger); }
 .btn-text.danger:hover { background: var(--color-danger-bg); }
-.btn-sm { padding: 6px 12px; font-size: var(--font-size-sm); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-sm { padding: 4px 12px !important; border-radius: 12px !important; font-size: 12px !important; line-height: 16px !important; }
+.btn:disabled { opacity: 1; cursor: not-allowed; background: #F0F0F0 !important; color: #C2C2C2 !important; border-color: #F0F0F0 !important; }
 
 /* ========== 5. 统计面板 ========== */
 .stats-section { margin-bottom: var(--spacing-md); }
