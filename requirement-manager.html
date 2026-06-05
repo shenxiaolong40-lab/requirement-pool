@@ -669,12 +669,8 @@ tbody tr { transition: background var(--transition-fast); }
     <div class="modal-body">
       <input type="hidden" id="formId">
       <div class="form-group">
-        <label>Ones链接 <span style="color:#888888;font-weight:400;font-size:12px;">（粘贴链接自动拉取需求信息）</span></label>
-        <div style="display:flex;gap:8px;">
-          <input type="text" id="formOnesLink" placeholder="https://ones.sankuai.com/ones/product/.../workItem/requirement/detail/..." maxlength="500" style="flex:1;">
-          <button class="btn btn-default btn-sm" id="btnFetchOnes" onclick="fetchOnesWorkItem()" style="flex-shrink:0;">拉取</button>
-        </div>
-        <div id="onesFetchStatus" style="font-size:12px;margin-top:4px;display:none;"></div>
+        <label>Ones链接</label>
+        <input type="text" id="formOnesLink" placeholder="https://ones.sankuai.com/ones/product/.../workItem/requirement/detail/..." maxlength="500">
       </div>
       <div class="form-group">
         <label>需求标题 <span class="required">*</span></label>
@@ -1088,179 +1084,6 @@ function escapeHTML(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* ========== 7b. Ones 链接解析 & 数据拉取 ========== */
-function parseOnesUrl(url) {
-  // 支持两种格式:
-  // https://ones.sankuai.com/ones/product/3067/workItem/requirement/detail/94774183
-  // https://ones.sankuai.com/ones/product/3067/workItem/requirement/detail/94774183?activeTabName=first
-  var m = url.match(/ones\.sankuai\.com\/ones\/product\/(\d+)\/workItem\/\w+\/detail\/(\d+)/);
-  if (!m) return null;
-  return { productId: m[1], workItemId: m[2] };
-}
-
-function fetchOnesWorkItem() {
-  var link = document.getElementById('formOnesLink').value.trim();
-  if (!link) return;
-
-  var parsed = parseOnesUrl(link);
-  if (!parsed) {
-    showFetchStatus('Ones 链接格式不正确，无法解析', 'error');
-    return;
-  }
-
-  var btn = document.getElementById('btnFetchOnes');
-  btn.disabled = true;
-  btn.textContent = '拉取中...';
-  showFetchStatus('正在从 Ones 获取需求信息...', 'loading');
-
-  var PROXY_BASE = 'http://localhost:8766';
-
-  checkProxy()
-    .then(function(proxyOk) {
-      if (proxyOk) {
-        // 通过本地代理的 agent-browser 提取数据
-        return fetch(PROXY_BASE + '/api/ones-extract?url=' + encodeURIComponent(link))
-          .then(function(r) { return r.json(); })
-          .then(function(json) {
-            if (json && json.status === 200 && json.data) {
-              fillFormFromOnesData(json.data);
-              return { success: true };
-            }
-            throw new Error(json && json.error || 'extract failed');
-          });
-      } else {
-        // 无代理，尝试直接调用 Ones API
-        return tryDirect();
-      }
-    })
-    .then(function(result) {
-      if (result && result.success) {
-        btn.disabled = false;
-        btn.textContent = '拉取';
-        showFetchStatus('已成功获取需求信息', 'success');
-      } else {
-        throw new Error(result && result.error || 'failed');
-      }
-    })
-    .catch(function(err) {
-      btn.disabled = false;
-      btn.textContent = '拉取';
-      showFetchStatus('未能自动获取，请手动填写或启动本地代理', 'error');
-      if (confirm('无法自动拉取 Ones 需求信息。\n\n请确认：\n1. 已启动本地代理（node server.js）\n2. 已配置 Ones Cookie\n\n是否在新标签页中打开 Ones 需求页面？')) {
-        window.open(link, '_blank');
-      }
-    });
-
-  function checkProxy() {
-    return fetch(PROXY_BASE + '/api/health', { signal: AbortSignal.timeout(3000) })
-      .then(function(r) { return r.json(); })
-      .then(function(d) { return d && d.status === 'ok'; })
-      .catch(function() { return false; });
-  }
-
-  function tryDirect() {
-    var endpoints = [
-      'https://ones.sankuai.com/ones/api/v1/project/' + parsed.productId + '/workitem/' + parsed.workItemId,
-      'https://ones.sankuai.com/api/v1/project/' + parsed.productId + '/workitem/' + parsed.workItemId,
-      'https://ones.sankuai.com/ones/api/v1/product/' + parsed.productId + '/workitem/' + parsed.workItemId
-    ];
-
-    function tryNext(index) {
-      if (index >= endpoints.length) {
-        return Promise.resolve({ success: false, error: 'all endpoints failed' });
-      }
-      return fetch(endpoints[index], { credentials: 'include' })
-        .then(function(r) { return r.json(); })
-        .then(function(json) {
-          if (json && (json.status === 200 || json.code === 200)) {
-            fillFormFromOnesData(json.data);
-            return { success: true };
-          }
-          throw new Error('unexpected response');
-        })
-        .catch(function() { return tryNext(index + 1); });
-    }
-    return tryNext(0);
-  }
-}
-
-function fillFormFromOnesData(data) {
-  // Ones API 响应通常把 workItem 信息放在 data.workItem 或直接放在 data 中
-  var item = (data && data.workItem) ? data.workItem : data;
-  if (!item) return;
-
-  // 标题
-  if (item.name || item.title) {
-    document.getElementById('formTitle').value = item.name || item.title || '';
-  }
-
-  // 需求文档链接（从 Ones 需求资产中的 PRD 获取）
-  if (item.docLink && !document.getElementById('formDocLink').value) {
-    document.getElementById('formDocLink').value = item.docLink;
-  }
-
-  // 优先级映射
-  if (item.priority) {
-    var priName = (typeof item.priority === 'object') ? (item.priority.name || item.priority.label || '') : String(item.priority);
-    var priMap = {
-      '紧急': 'P0', '高': 'P1', '中': 'P2', '低': 'P3',
-      'urgent': 'P0', 'high': 'P1', 'medium': 'P2', 'low': 'P3',
-      'P0': 'P0', 'P1': 'P1', 'P2': 'P2', 'P3': 'P3'
-    };
-    var mapped = priMap[priName] || 'P1';
-    document.getElementById('formPriority').value = mapped;
-  }
-
-  // 状态映射
-  if (item.status) {
-    var stName = (typeof item.status === 'object') ? (item.status.name || item.status.label || '') : String(item.status);
-    var stMap = {
-      '规划中': '待评审', '待评审': '待评审', '评审中': '待评审',
-      '待开发': '待开发', '开发中': '开发中', '实现中': '开发中',
-      '已完成': '已上线', '已发布': '已上线', '已上线': '已上线',
-      '已取消': '已取消', '已拒绝': '已取消'
-    };
-    var stMapped = stMap[stName] || '待评审';
-    document.getElementById('formStatus').value = stMapped;
-  }
-
-  // 迭代
-  if (item.iteration) {
-    var iterName = (typeof item.iteration === 'object') ? (item.iteration.name || item.iteration.label || '') : String(item.iteration);
-    document.getElementById('formIteration').value = iterName.slice(0, 20);
-  }
-
-  // 创建人/负责人
-  if (item.owner || item.owners || item.creator || item.assignee) {
-    var owner = item.owner || item.creator || item.assignee;
-    if (Array.isArray(owner)) {
-      owner = owner.map(function(o) { return (typeof o === 'object') ? (o.name || o.username || '') : o; }).filter(Boolean).join(',');
-    } else if (typeof owner === 'object') {
-      owner = owner.name || owner.username || '';
-    }
-    if (owner && !document.getElementById('formCreator').value) {
-      document.getElementById('formCreator').value = String(owner).slice(0, 20);
-    }
-  }
-
-  // 关键节点（从计划完成时间获取）
-  if (item.dueDate || item.deadline || item.plannedEndDate || item.endDate) {
-    var d = item.dueDate || item.deadline || item.plannedEndDate || item.endDate;
-    if (d && !document.getElementById('formKeyMilestone').value) {
-      document.getElementById('formKeyMilestone').value = String(d).slice(0, 50);
-    }
-  }
-
-  document.getElementById('titleError').style.display = 'none';
-}
-
-function showFetchStatus(msg, type) {
-  var el = document.getElementById('onesFetchStatus');
-  el.style.display = 'block';
-  el.textContent = msg;
-  el.style.color = type === 'error' ? '#FF2D19' : type === 'success' ? '#00B300' : '#0A77F5';
-}
-
 /* ========== 8. 弹窗控制 ========== */
 var editingId = null;
 
@@ -1300,9 +1123,6 @@ function openModal(id) {
   }
 
   document.getElementById('titleError').style.display = 'none';
-  document.getElementById('onesFetchStatus').style.display = 'none';
-  document.getElementById('btnFetchOnes').disabled = false;
-  document.getElementById('btnFetchOnes').textContent = '拉取';
   setTimeout(function() { document.getElementById('formTitle').focus(); }, 100);
 }
 
@@ -1578,18 +1398,6 @@ deleteConfirm = function(id) { requireAdmin(function() { _deleteConfirm(id); });
   updateAdminUI();
   refreshUI();
 
-  // Ones 链接粘贴自动拉取
-  var onesInput = document.getElementById('formOnesLink');
-  if (onesInput) {
-    onesInput.addEventListener('paste', function() {
-      setTimeout(function() {
-        var val = onesInput.value.trim();
-        if (val && parseOnesUrl(val)) {
-          fetchOnesWorkItem();
-        }
-      }, 100);
-    });
-  }
 })();
 </script>
 
